@@ -55,22 +55,24 @@ for x in xrange(upto, len(periods)):
     br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
     response = br.open(annDonorsurl)
     print "Loading data for "+periods[x]['year']
-    #for form in br.forms():
-    #    print form
+    for form in br.forms():
+        print form
 
+    #print br.forms()    
 
     #print "All forms:", [ form.name  for form in br.forms() ]
  
-    br.select_form(nr=2)
+    br.select_form(nr=0)
 
-    #print br.form
-    #print periods[x]['id']
+    print br.form
+    print periods[x]['id']
 
+    
     br['ctl00$dropDownListPeriod']=[periods[x]['id']]
     response = br.submit("ctl00$buttonGo")
 
     response = br.open(annDonorsurl)
-    br.select_form(nr=2)
+    br.select_form(nr=0)
     #print br.form.controls[10] 
     items = br.form.controls[10].get_items()
 
@@ -79,14 +81,14 @@ for x in xrange(upto, len(periods)):
         print "Entity:", item.attrs['label']
         #item.name
         response = br.open(annDonorsurl)
-        br.select_form(nr=2)
+        br.select_form(nr=0)
         br['ctl00$ContentPlaceHolderBody$dropDownListParties']=[item.name]
         response = br.submit("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse")
 
 
         #first page
         try:
-            br.select_form(nr=2)
+            br.select_form(nr=0)
             br['ctl00$ContentPlaceHolderBody$pagingControl$cboPageSize']=["500"]
             response = br.submit("ctl00$ContentPlaceHolderBody$pagingControl$buttonGo")
             html = response.read()
@@ -171,7 +173,7 @@ for x in xrange(upto, len(periods)):
                 print "multiple pages, doing more now"
                 for page in xrange(1,noPages):
                     print page
-                    br.select_form(nr=2)
+                    br.select_form(nr=0)
                     br.set_all_readonly(False)
                     br.find_control("ctl00$buttonGo").disabled = True
                     br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse").disabled = True
