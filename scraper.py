@@ -42,7 +42,7 @@ else:
     upto = 0    
 
 #to run entirely again, just set upto to 0 
-upto = 0  
+#upto = 0  
 
 #unique number for every entry
 
