@@ -64,8 +64,8 @@ for x in xrange(upto, len(periods)):
  
     br.select_form(nr=0)
 
-    print br.form
-    print periods[x]['id']
+    # print br.form
+    # print periods[x]['id']
 
     
     br['ctl00$dropDownListPeriod']=[periods[x]['id']]
@@ -78,7 +78,7 @@ for x in xrange(upto, len(periods)):
 
     for item in items:
         #print item.name
-        print "Entity:", item.attrs['label']
+        # print "Entity:", item.attrs['label']
         #item.name
         response = br.open(annDonorsurl)
         br.select_form(nr=0)
@@ -158,7 +158,7 @@ for x in xrange(upto, len(periods)):
                     data['entityName'] = item.attrs['label']
                     data['cleanName'] = cleanName
 
-                    print data
+                    # print data
                     
                     scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
@@ -244,7 +244,7 @@ for x in xrange(upto, len(periods)):
                         data['entityName'] = item.attrs['label']
                         data['cleanName'] = cleanName
 
-                        print data
+                        # print data
                         
                         scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
