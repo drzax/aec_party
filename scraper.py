@@ -202,6 +202,11 @@ for x in xrange(upto, len(periods)):
 
                     # print data
                     
+                    for groupID in partyGroups:
+                            if item.name == groupID['entityID']:
+                                data['partyGroup'] = groupID['group']
+
+
                     scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
 
@@ -287,6 +292,10 @@ for x in xrange(upto, len(periods)):
                         data['cleanName'] = cleanName
 
                         # print data
+
+                        for groupID in partyGroups:
+                            if item.name == groupID['entityID']:
+                                data['partyGroup'] = groupID['group']
                         
                         scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
