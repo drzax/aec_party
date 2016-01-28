@@ -71,7 +71,9 @@ partyGroups = [{"entityID":4,"group":"alp"},
 {"entityID":39,"group":"nationals"},
 {"entityID":38,"group":"nationals"},
 {"entityID":49,"group":"nationals"},
-{"entityID":42,"group":"nationals"}]
+{"entityID":42,"group":"nationals"},
+{"entityID":24,"group":"liberal"}
+]
 
 
 #Check if scraper has been run before, see where it got up to
