@@ -32,6 +32,50 @@ periods = [
 {"year":"2013-2014","id":"55"}
 ]
 
+partyGroups = [{"entityID":4,"group":"alp"},
+{"entityID":52,"group":"alp"},
+{"entityID":55,"group":"alp"},
+{"entityID":50,"group":"alp"},
+{"entityID":64,"group":"alp"},
+{"entityID":54,"group":"alp"},
+{"entityID":27,"group":"alp"},
+{"entityID":51,"group":"alp"},
+{"entityID":53,"group":"alp"},
+{"entityID":132,"group":"alp"},
+{"entityID":32,"group":"greens"},
+{"entityID":72,"group":"greens"},
+{"entityID":138,"group":"greens"},
+{"entityID":1100,"group":"greens"},
+{"entityID":98,"group":"greens"},
+{"entityID":31,"group":"greens"},
+{"entityID":97,"group":"greens"},
+{"entityID":205,"group":"greens"},
+{"entityID":137,"group":"greens"},
+{"entityID":4028,"group":"greens"},
+{"entityID":158,"group":"greens"},
+{"entityID":153,"group":"greens"},
+{"entityID":207,"group":"greens"},
+{"entityID":186,"group":"greens"},
+{"entityID":27964,"group":"greens"},
+{"entityID":6,"group":"liberal"},
+{"entityID":40,"group":"liberal"},
+{"entityID":46,"group":"liberal"},
+{"entityID":35,"group":"liberal"},
+{"entityID":44,"group":"liberal"},
+{"entityID":36,"group":"liberal"},
+{"entityID":43,"group":"liberal"},
+{"entityID":41,"group":"liberal"},
+{"entityID":211,"group":"liberal"},
+{"entityID":19,"group":"nationals"},
+{"entityID":37,"group":"nationals"},
+{"entityID":39,"group":"nationals"},
+{"entityID":38,"group":"nationals"},
+{"entityID":49,"group":"nationals"},
+{"entityID":42,"group":"nationals"},
+{"entityID":24,"group":"liberal"}
+]
+
+
 #Check if scraper has been run before, see where it got up to
 
 if scraperwiki.sqlite.get_var('upto'):
@@ -42,7 +86,7 @@ else:
     upto = 0    
 
 #to run entirely again, just set upto to 0 
-#upto = 0  
+upto = 0  
 
 #unique number for every entry
 
@@ -109,7 +153,7 @@ for x in xrange(upto, len(periods)):
                 try:
                     donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
                     #print donType
-                    submissionID = lxml.html.tostring(tds[0]).split('SubmissionID=')[1].split('&amp;ClientID=')[0]
+                    submissionID = lxml.html.tostring(tds[0]).split('SubmissionId=')[1].split('&amp;ClientId=')[0]
                     #print submissionID
                     clientID = lxml.html.tostring(tds[0]).split('ClientID=')[1].split('">')[0]
                     #print clientID
@@ -160,6 +204,11 @@ for x in xrange(upto, len(periods)):
 
                     # print data
                     
+                    for groupID in partyGroups:
+                            if item.name == groupID['entityID']:
+                                data['partyGroup'] = groupID['group']
+
+
                     scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
 
@@ -193,9 +242,9 @@ for x in xrange(upto, len(periods)):
                         tds = trs[i].cssselect("td")   
                         donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
                         #print donType
-                        submissionID = lxml.html.tostring(tds[0]).split('SubmissionID=')[1].split('&amp;ClientID=')[0]
+                        submissionID = lxml.html.tostring(tds[0]).split('SubmissionId=')[1].split('&amp;ClientId=')[0]
                         #print submissionID
-                        clientID = lxml.html.tostring(tds[0]).split('ClientID=')[1].split('">')[0]
+                        clientID = lxml.html.tostring(tds[0]).split('ClientId=')[1].split('">')[0]
                         #print clientID
                         donName = lxml.html.tostring(tds[0]).split('">')[2].split('</a')[0]
                         #print donName
@@ -245,11 +294,16 @@ for x in xrange(upto, len(periods)):
                         data['cleanName'] = cleanName
 
                         # print data
+
+                        for groupID in partyGroups:
+                            if item.name == groupID['entityID']:
+                                data['partyGroup'] = groupID['group']
                         
                         scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
         except Exception, e:
             print e
+            print traceback.print_exc()
             print "No donations"                
 
     scraperwiki.sqlite.save_var('upto', x)        
