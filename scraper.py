@@ -122,7 +122,7 @@ for x in xrange(upto, len(periods)):
 	#print br.form.controls[10] 
 	items = br.form.controls[10].get_items()
 
-	for item in items:
+	for item in items[16:17]:
 		print item.name
 		print "Entity:", item.attrs['label']
 		#item.name
@@ -130,8 +130,6 @@ for x in xrange(upto, len(periods)):
 		br.select_form(nr=0)
 		br['ctl00$ContentPlaceHolderBody$dropDownListParties']=[item.name]
 		response = br.submit("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse")
-
-
 
 		#check if donations listed
 
@@ -156,10 +154,15 @@ for x in xrange(upto, len(periods)):
 		noPages = len(pages)
 		page = 1
 
-		uptotrs = 1    
+		uptotrs = 498
 
 		for i in xrange(uptotrs,len(trs)):
 
+			#ignore the trs at the end of the page
+
+			if 'class' not in trs[i].attrib:
+				continue
+				
 			if trs[i].attrib['class'] == 'pagingLink':
 				continue
 
@@ -248,6 +251,13 @@ for x in xrange(upto, len(periods)):
 				uptotrs = 1  
 
 				for i in xrange(uptotrs,len(trs)):
+
+					if 'class' not in trs[i].attrib:
+						continue
+						
+					if trs[i].attrib['class'] == 'pagingLink':
+						continue
+
 					tds = trs[i].cssselect("td")   
 					donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
 					#print donType
