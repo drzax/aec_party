@@ -122,7 +122,7 @@ for x in xrange(upto, len(periods)):
 	#print br.form.controls[10] 
 	items = br.form.controls[10].get_items()
 
-	for item in items[16:17]:
+	for item in items:
 		print item.name
 		print "Entity:", item.attrs['label']
 		#item.name
@@ -154,7 +154,7 @@ for x in xrange(upto, len(periods)):
 		noPages = len(pages)
 		page = 1
 
-		uptotrs = 498
+		uptotrs = 1
 
 		for i in xrange(uptotrs,len(trs)):
 
