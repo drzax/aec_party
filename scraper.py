@@ -33,6 +33,8 @@ periods = [
 {"year":"2014-2015","id":"56"}
 ]
 
+periods = [{"year":"2014-2015","id":"56"}]
+
 partyGroups = [{"entityID":4,"group":"alp"},
 {"entityID":52,"group":"alp"},
 {"entityID":55,"group":"alp"},
@@ -217,7 +219,7 @@ for x in xrange(upto, len(periods)):
 						data['partyGroup'] = groupID['group']
 
 
-			# scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
+			scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
 		#get other pages if present
 		
