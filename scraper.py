@@ -159,6 +159,10 @@ for x in xrange(upto, len(periods)):
 		uptotrs = 1    
 
 		for i in xrange(uptotrs,len(trs)):
+
+			if trs[i].attrib['class'] == 'pagingLink':
+				continue
+
 			tds = trs[i].cssselect("td")
 
 			donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
