@@ -130,27 +130,119 @@ for x in xrange(upto, len(periods)):
 		response = br.submit("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse")
 
 
-		#first page
-		try:
-			br.select_form(nr=0)
-			br['ctl00$ContentPlaceHolderBody$pagingControl$cboPageSize']=["500"]
-			response = br.submit("ctl00$ContentPlaceHolderBody$pagingControl$buttonGo")
-			html = response.read()
+
+		#check if donations listed
+
+		html = response.read()
+		root = lxml.html.fromstring(html)
+		tds = root.cssselect("#ContentPlaceHolderBody_gridViewAnalysis tr td")
+		
+		if tds[0].text == "There have been no receipts reported":
+			print tds[0].text
+			continue
+
+		br.select_form(nr=0)
+		br['ctl00$ContentPlaceHolderBody$pagingControl$cboPageSize']=["500"]
+		response = br.submit("ctl00$ContentPlaceHolderBody$pagingControl$buttonGo")
+		html = response.read()
+		
+		#print html
+
+		root = lxml.html.fromstring(html)
+		trs = root.cssselect("#ContentPlaceHolderBody_gridViewAnalysis tr")
+		pages = root.cssselect(".pagingLink table td")
+		noPages = len(pages)
+		page = 1
+
+		uptotrs = 1    
+
+		for i in xrange(uptotrs,len(trs)):
+			tds = trs[i].cssselect("td")
+
+			donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
+			#print donType
+			submissionID = lxml.html.tostring(tds[0]).split('SubmissionId=')[1].split('&amp;ClientId=')[0]
+			#print submissionID
+			clientID = lxml.html.tostring(tds[0]).split('ClientId=')[1].split('">')[0]
+			#print clientID
+			donName = lxml.html.tostring(tds[0]).split('">')[2].split('</a')[0]
+			#print donName
+			address = tds[1].text
+			#print address
+			state = tds[2].text
+			#print state
+			postcode = tds[3].text
+			#print postcode
+			receiptType = tds[4].text
+			#print receiptType
+			value = tds[5].text.replace("$", "").replace(",","")
+			#print value
+			donUrl = lxml.html.tostring(tds[0]).split('<a href="')[1].split('">')[0]
+			#print donUrl 
+
+
+			fixedUrl = 'http://periodicdisclosures.aec.gov.au/' + donUrl.replace("amp;","")
+			html = requests.get(fixedUrl).content
+			dom = lxml.html.fromstring(html)
+			h2s = dom.cssselect(".rightColfadWideHold h2")
+			if donType == "Donor" or donType == "AssociatedEntity":
+				cleanName = h2s[0].text.strip()
+				#print cleanName.strip()
+			if donType == "Party":
+				cleanName = h2s[1].text.strip()
+				#print cleanName.strip()
+
+			data = {}
+			data['donType'] = donType
+			data['submissionID'] = submissionID
+			data['clientID'] = clientID
+			data['donName'] = donName
+			data['address'] = address
+			data['state'] = state
+			data['postcode'] = postcode
+			data['receiptType'] = receiptType
+			data['value'] = value
+			data['donUrl'] = donUrl
+			data['rowCount'] = i
+			data['page'] = page
+			data['entityID'] = item.name
+			data['period'] = periods[x]['year']
+			data['entityName'] = item.attrs['label']
+			data['cleanName'] = cleanName
+
+			print data
 			
-			#print html
+			for groupID in partyGroups:
+					if item.name == groupID['entityID']:
+						data['partyGroup'] = groupID['group']
 
 
-			root = lxml.html.fromstring(html)
-			trs = root.cssselect("#ContentPlaceHolderBody_gridViewAnalysis tr")
-			pages = root.cssselect(".pagingLink table td")
-			noPages = len(pages)
-			page = 1
+			# scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
 
-			uptotrs = 1    
+		#get other pages if present
+		
+		if noPages > 1:
+			print "multiple pages, doing more now"
+			for page in xrange(1,noPages):
+				print page
+				br.select_form(nr=0)
+				br.set_all_readonly(False)
+				br.find_control("ctl00$buttonGo").disabled = True
+				br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse").disabled = True
+				br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse").disabled = True
+				br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonExport").disabled = True
+				br["__EVENTTARGET"] = 'ctl00$ContentPlaceHolderBody$gridViewAnalysis'
+				br["__EVENTARGUMENT"] = 'Page$2'
+				response = br.submit()
+				html = response.read()
+				#print html
 
-			for i in xrange(uptotrs,len(trs)):
-				tds = trs[i].cssselect("td")
-				try:
+				root = lxml.html.fromstring(html)
+				trs = root.cssselect("#ContentPlaceHolderBody_gridViewAnalysis tr")
+				uptotrs = 1  
+
+				for i in xrange(uptotrs,len(trs)):
+					tds = trs[i].cssselect("td")   
 					donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
 					#print donType
 					submissionID = lxml.html.tostring(tds[0]).split('SubmissionId=')[1].split('&amp;ClientId=')[0]
@@ -184,6 +276,8 @@ for x in xrange(upto, len(periods)):
 						cleanName = h2s[1].text.strip()
 						#print cleanName.strip()
 
+
+					count += 1
 					data = {}
 					data['donType'] = donType
 					data['submissionID'] = submissionID
@@ -196,114 +290,19 @@ for x in xrange(upto, len(periods)):
 					data['value'] = value
 					data['donUrl'] = donUrl
 					data['rowCount'] = i
-					data['page'] = page
+					data['page'] = page+1
 					data['entityID'] = item.name
 					data['period'] = periods[x]['year']
 					data['entityName'] = item.attrs['label']
 					data['cleanName'] = cleanName
 
 					print data
-					
+
 					for groupID in partyGroups:
-							if item.name == groupID['entityID']:
-								data['partyGroup'] = groupID['group']
-
-
+						if item.name == groupID['entityID']:
+							data['partyGroup'] = groupID['group']
+					
 					scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
-
-
-				except Exception, e:
-					print e
-					print traceback.print_exc()
-					print "Nothing here"
-			#get other pages if present
-			
-			if noPages > 1:
-				print "multiple pages, doing more now"
-				for page in xrange(1,noPages):
-					print page
-					br.select_form(nr=0)
-					br.set_all_readonly(False)
-					br.find_control("ctl00$buttonGo").disabled = True
-					br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse").disabled = True
-					br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonAnalyse").disabled = True
-					br.find_control("ctl00$ContentPlaceHolderBody$analysisControl$buttonExport").disabled = True
-					br["__EVENTTARGET"] = 'ctl00$ContentPlaceHolderBody$gridViewAnalysis'
-					br["__EVENTARGUMENT"] = 'Page$2'
-					response = br.submit()
-					html = response.read()
-					#print html
-
-					root = lxml.html.fromstring(html)
-					trs = root.cssselect("#ContentPlaceHolderBody_gridViewAnalysis tr")
-					uptotrs = 1  
-
-					for i in xrange(uptotrs,len(trs)):
-						tds = trs[i].cssselect("td")   
-						donType = lxml.html.tostring(tds[0]).split('<a href="')[1].split('.aspx?')[0]
-						#print donType
-						submissionID = lxml.html.tostring(tds[0]).split('SubmissionId=')[1].split('&amp;ClientId=')[0]
-						#print submissionID
-						clientID = lxml.html.tostring(tds[0]).split('ClientId=')[1].split('">')[0]
-						#print clientID
-						donName = lxml.html.tostring(tds[0]).split('">')[2].split('</a')[0]
-						#print donName
-						address = tds[1].text
-						#print address
-						state = tds[2].text
-						#print state
-						postcode = tds[3].text
-						#print postcode
-						receiptType = tds[4].text
-						#print receiptType
-						value = tds[5].text.replace("$", "").replace(",","")
-						#print value
-						donUrl = lxml.html.tostring(tds[0]).split('<a href="')[1].split('">')[0]
-						#print donUrl 
-
-
-						fixedUrl = 'http://periodicdisclosures.aec.gov.au/' + donUrl.replace("amp;","")
-						html = requests.get(fixedUrl).content
-						dom = lxml.html.fromstring(html)
-						h2s = dom.cssselect(".rightColfadWideHold h2")
-						if donType == "Donor" or donType == "AssociatedEntity":
-							cleanName = h2s[0].text.strip()
-							#print cleanName.strip()
-						if donType == "Party":
-							cleanName = h2s[1].text.strip()
-							#print cleanName.strip()
-
-
-						count += 1
-						data = {}
-						data['donType'] = donType
-						data['submissionID'] = submissionID
-						data['clientID'] = clientID
-						data['donName'] = donName
-						data['address'] = address
-						data['state'] = state
-						data['postcode'] = postcode
-						data['receiptType'] = receiptType
-						data['value'] = value
-						data['donUrl'] = donUrl
-						data['rowCount'] = i
-						data['page'] = page+1
-						data['entityID'] = item.name
-						data['period'] = periods[x]['year']
-						data['entityName'] = item.attrs['label']
-						data['cleanName'] = cleanName
-
-						print data
-
-						for groupID in partyGroups:
-							if item.name == groupID['entityID']:
-								data['partyGroup'] = groupID['group']
-						
-						scraperwiki.sqlite.save(unique_keys=["rowCount","page","period","entityID"], data=data)
-
-		except Exception, e:
-			print e
-			print traceback.print_exc()
-			print "No donations"                
+              
 
 	scraperwiki.sqlite.save_var('upto', x)        
