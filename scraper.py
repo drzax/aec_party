@@ -220,7 +220,7 @@ for x in xrange(upto, len(periods)):
 			data['entityName'] = item.attrs['label']
 			data['cleanName'] = cleanName
 
-			print data
+# 			print data
 			
 			for groupID in partyGroups:
 					if item.name == groupID['entityID']:
@@ -313,7 +313,7 @@ for x in xrange(upto, len(periods)):
 					data['entityName'] = item.attrs['label']
 					data['cleanName'] = cleanName
 
-					print data
+# 					print data
 
 					for groupID in partyGroups:
 						if item.name == groupID['entityID']:
